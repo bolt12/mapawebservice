@@ -46,22 +46,23 @@ class DeviceController {
 
     const id = params.id;
 
-    const device = Device.findOrFail(id);
+    const device = await Device.findOrFail(id);
 
     const body = request.except('_method', '_csrf', 'submit');
 
-    device.fill(body);
+    device.name = body.name;
+    device.type = body.type;
 
-    await lprinter.save();
+    await device.save();
 
-    response.json(lprinter);
+    response.json(device);
   }
 
   async destroy({ request, response, params }) {
 
     const id = params.id;
 
-    const device = Device.findOrFail(id);
+    const device = await Device.findOrFail(id);
 
     device.active = false;
     await device.save();
@@ -77,11 +78,11 @@ class DeviceController {
 
     const device = await Device.findOrFail(id); // If there's no device in db abort
 
-    let ssdpAddress = device.ip,
-        ssdpPort = 1900,
+    let ssdpAddress = '239.255.255.250',
+        ssdpPort = device.type === 'led' ? 1982 : 1900,
         sourceIface = '0.0.0.0',
         sourcePort = 1234,
-        searchTarget = 'upnp:rootdevice',
+        searchTarget = device.type === 'led' ? 'wifi_bulb' : 'upnp:rootdevice',
         active = false,
         socket;
 
@@ -103,7 +104,9 @@ class DeviceController {
       /* After a timeout closes socket and sends a response with the info about the device */
       setTimeout(() => {
         socket.close();
-        response.json({ ip: ssdpAddress, active: active });
+        device.on_off = active;
+        device.save();
+        response.json({ ip: device.ip, active: active });
       }, 1000);
     }
 
@@ -121,7 +124,7 @@ class DeviceController {
         var message = chunk.toString();
         let msg = message.toString().trim().split('\r\n');
         msg.forEach(line => {
-          if(info.address == ssdpAddress) {
+          if(info.address == device.ip) {
             active = true;
           }
         });

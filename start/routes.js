@@ -38,10 +38,13 @@ Route.group(() => {
   /* File endpoints */
   Route.resource('file', 'FileController');
   Route.get('file/uploaded/:folder', 'FileController.fromFolder');
+  Route.get('file/folders/get', 'FileController.folders');
 
   /* List endpoints */
   Route.resource('list', 'ListController');
   Route.post('list/:id/add', 'ListController.addTask');
+  Route.put('task/:id', 'ListController.editTask');
+  Route.delete('task/:id', 'ListController.deleteTask');
 
   /* Scan a device endpoint */
   Route.post('device/scan', 'DeviceController.scan');

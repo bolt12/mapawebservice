@@ -28,26 +28,49 @@ class FileController {
       size: '50mb'
     });
 
-    await uploadedFiles.moveAll(Helpers.publicPath(folder), (uploadedFile) => {
-      return {
-        name: `${new Date().getTime()}_${uploadedFile.clientName}`
+    let file;
+
+    if (uploadedFiles.files !== undefined) {
+      await uploadedFiles.moveAll(Helpers.publicPath(folder), (uploadedFile) => {
+        return {
+          name: `${new Date().getTime()}_${uploadedFile.clientName}`
+        }
+      });
+
+      if (!uploadedFiles.movedAll()) {
+        return uploadedFiles.error()
       }
-    });
 
-    if (!uploadedFiles.movedAll()) {
-      return uploadedFiles.error()
+      uploadedFiles.files.forEach((uploadedFile) => {
+        file = new File();
+        file.name = uploadedFile.fileName;
+        file.path = uploadedFile._location + "/" + uploadedFile.fileName;
+        file.folder = folder;
+        file.type = uploadedFile.subtype;
+
+        file.save();
+        files.push(file);
+      })
     }
+    else {
+      await uploadedFiles.move(Helpers.publicPath(folder), {
+        name: `${new Date().getTime()}_${uploadedFiles.clientName}`
+      });
 
-    uploadedFiles.files.forEach( (uploadedFile) => {
-      const file = new File();
-      file.name = uploadedFile.fileName;
-      file.path = uploadedFile._location;
+      if (!uploadedFiles.moved()) {
+        return uploadedFiles.error()
+      }
+
+      file = new File();
+      file.name = uploadedFiles.fileName;
+      file.path = uploadedFiles._location + "/" + uploadedFiles.fileName;
       file.folder = folder;
-      file.type = uploadedFile.subtype;
+      file.type = uploadedFiles.subtype;
 
       file.save();
       files.push(file);
-    })
+
+    }
 
     response.json(files);
   }
@@ -58,7 +81,7 @@ class FileController {
 
     const file = await File.findOrFail(id);
 
-    response.json(file);
+    response.download(file.path);
   }
 
   async edit () {
@@ -83,7 +106,7 @@ class FileController {
 
     const id = params.id;
 
-    const file = File.findOrFail(id);
+    const file = await File.findOrFail(id);
 
     await file.delete();
 
@@ -92,9 +115,19 @@ class FileController {
 
   async fromFolder ({request, response, params} ){
 
+    const folder = "uploaded/" + params.folder;
     const files = await File.query().where('folder', folder).fetch();
 
     response.json(files);
+  }
+
+  async folders ({request, response}) {
+
+    let folders = await File.query().select('folder').fetch();
+    folders = folders.rows.map(file => file.folder);
+    folders = new Set(folders);
+
+    response.json([...folders]);
   }
 }
 

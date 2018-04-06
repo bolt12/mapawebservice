@@ -6,7 +6,7 @@ class TaskSchema extends Schema {
   up () {
     this.create('tasks', (table) => {
       table.increments()
-      table.integer('list_id').unsigned().references('id').inTable('lists').notNullable()
+      table.integer('list_id').unsigned().references('id').inTable('lists').notNullable().onDelete('cascade')
       table.string('description', 100).notNullable()
       table.string('status', 10).notNullable()
       table.timestamps()

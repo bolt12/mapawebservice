@@ -10,7 +10,9 @@ class AuthController {
 
     const token = await auth.attempt(credentials.username, credentials.password);
 
-    response.json(token);
+    const user = await User.findBy('username', credentials.username);
+
+    response.json({type: token.type, token: token.token, username: user.username, user_id: user.id});
   }
 
   async logout ( {response, auth} ) {

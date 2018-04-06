@@ -7,8 +7,9 @@ class ListController {
   async index ( {request, response} ) {
 
     const lists = await List.all();
+    const tasks = await Task.all()
 
-    response.json(lists);
+    response.json({lists, tasks});
   }
 
   async store ( {request, response, auth} ) {
@@ -25,13 +26,15 @@ class ListController {
     response.json(list);
   }
 
-  async show ( {request, resposnse, params} ) {
+  async show ( {request, response, params} ) {
 
     const id = params.id;
 
     const list = await List.findOrFail(id);
+    let tasks = await list.tasks();
+    tasks = tasks.filter( task => task.list_id == list.id);
 
-    response.json(list);
+    response.json({ list, tasks });
   }
 
   async update ( {request, response, params} ) {
@@ -48,7 +51,7 @@ class ListController {
     response.json(list);
   }
 
-  async delete ( {request, response, params} ) {
+  async destroy ( {request, response, params} ) {
 
     const id = params.id;
 
@@ -69,6 +72,30 @@ class ListController {
     task.list_id = id;
 
     await task.save();
+
+    response.json(task);
+  }
+
+  async editTask ( {request, response, params} ){
+
+    const id = params.id;
+    const body = request.except('_method', '_csrf', 'submit');
+
+    const task = await Task.findOrFail(id);
+    task.merge(body);
+
+    await task.save();
+
+    response.json(task);
+  }
+  
+  async deleteTask ( {request, response, params} ){
+
+    const id = params.id;
+
+    const task = await Task.findOrFail(id);
+
+    await task.delete();
 
     response.json(task);
   }

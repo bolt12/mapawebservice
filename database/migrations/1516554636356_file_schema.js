@@ -8,7 +8,7 @@ class FileSchema extends Schema {
       table.increments()
       table.string('name', 80).notNullable()
       table.string('folder', 20).index()
-      table.string('path', 200).unique().notNullable()
+      table.string('path', 190).unique().notNullable()
       table.string('type', 40).notNullable()
       table.timestamps()
     })

@@ -52,8 +52,22 @@ hooks.after.httpServer(() => {
     socket.on('listening', function () {
       console.log('Discovery server starting...');
 
-      broadcastSsdp();
-      setInterval(broadcastSsdp, 300000);
+      /* Gets all devices that are on */
+      let today = new Date();
+      today = today.toISOString();
+      const devices = Device.query().where('on_off', 1).fetch();
+
+      /* Sets all devices to off */
+      devices.then((dev) => {
+        if (dev != null) {
+          dev.rows.forEach((dev) => {
+            dev.on_off = false;
+            dev.save();
+          });
+        }
+        broadcastSsdp();
+        setInterval(broadcastSsdp, 300000);
+      });
     });
 
     socket.on('message', async (chunk, info) => {
