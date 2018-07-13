@@ -41,6 +41,15 @@ hooks.after.httpServer(() => {
       + 'ST: ' + searchTarget2 + '\r\n'
       + '\r\n'
     );
+    /* Sets all devices to off */
+      devices.then((dev) => {
+        if (dev != null) {
+          dev.rows.forEach((dev) => {
+            dev.on_off = false;
+            dev.save();
+          });
+        }
+      });
     // Send query for any device in the network
     socket.send(query1, 0, query1.length, ssdpPort1, ssdpAddress);
     // Send query for Yeelight LED Bulbs
@@ -51,23 +60,8 @@ hooks.after.httpServer(() => {
     socket = dgram.createSocket('udp4');
     socket.on('listening', function () {
       console.log('Discovery server starting...');
-
-      /* Gets all devices that are on */
-      let today = new Date();
-      today = today.toISOString();
-      const devices = Device.query().where('on_off', 1).fetch();
-
-      /* Sets all devices to off */
-      devices.then((dev) => {
-        if (dev != null) {
-          dev.rows.forEach((dev) => {
-            dev.on_off = false;
-            dev.save();
-          });
-        }
-        broadcastSsdp();
-        setInterval(broadcastSsdp, 300000);
-      });
+      broadcastSsdp();
+      setInterval(broadcastSsdp, 300000);
     });
 
     socket.on('message', async (chunk, info) => {
