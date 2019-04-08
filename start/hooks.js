@@ -41,7 +41,7 @@ hooks.after.httpServer(() => {
       + 'ST: ' + searchTarget2 + '\r\n'
       + '\r\n'
     );
-    /* Sets all devices to off */
+    /* Sets all devices to off
       devices.then((dev) => {
         if (dev != null) {
           dev.rows.forEach((dev) => {
@@ -50,6 +50,7 @@ hooks.after.httpServer(() => {
           });
         }
       });
+      */
     // Send query for any device in the network
     socket.send(query1, 0, query1.length, ssdpPort1, ssdpAddress);
     // Send query for Yeelight LED Bulbs
