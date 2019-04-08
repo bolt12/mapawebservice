@@ -26,3 +26,5 @@ Run the following command to run startup migrations.
 ```js
 adonis migration:run
 ```
+
+## [Documentation](https://github.com/bolt12/mapawebservice/blob/master/RPIWS_Backend.md)
